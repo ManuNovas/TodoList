@@ -1,0 +1,10 @@
+POST {{url}}/users/register
+Content-Type: application/json
+
+{
+  "name": "Clive Rosfield",
+  "email": "clive@rosfield.test",
+  "password": "BlkJ7KwBVsGgQbIJ"
+}
+
+###
