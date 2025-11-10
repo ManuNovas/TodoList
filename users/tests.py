@@ -86,3 +86,71 @@ class TestUsers(TestCase):
         }, content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertIn('password', response.json())
+
+    def test_login_success(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': 'clive@rosfield.test',
+            'password': 'password123',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('token', response.json())
+
+    def test_login_invalid_method(self):
+        self.create_user()
+        response = self.client.put(reverse('users:login'), {
+            'email': 'clive@rosfield.test',
+            'password': 'password123',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 405)
+
+    def test_login_invalid_credentials(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': 'clive@rosfield.test',
+            'password': 'password1234',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 401)
+
+    def test_login_invalid_email(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': 'rosfield.test',
+            'password': 'password123',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.json())
+
+    def test_login_long_email(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': ('clive' * 128) + '@rosfield.test',
+            'password': 'password123',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.json())
+
+    def test_login_without_email(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'password': 'password123',
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.json())
+
+    def test_login_long_password(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': 'clive@rosfield.test',
+            'password': 'password123' * 128,
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('password', response.json())
+
+    def test_login_without_password(self):
+        self.create_user()
+        response = self.client.post(reverse('users:login'), {
+            'email': 'clive@rosfield.test'
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('password', response.json())

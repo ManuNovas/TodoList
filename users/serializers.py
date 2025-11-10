@@ -20,3 +20,8 @@ class RegisterSerializer(Serializer):
             password=validated_data['password'],
             first_name=validated_data['name'],
         )
+
+
+class LoginSerializer(Serializer):
+    email = EmailField(max_length=128, required=True)
+    password = CharField(max_length=64, required=True)
