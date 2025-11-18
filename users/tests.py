@@ -5,7 +5,8 @@ from django.urls import reverse
 
 # Create your tests here.
 class TestUsers(TestCase):
-    def create_user(self):
+    @staticmethod
+    def create_user():
         return User.objects.create_user(username='clive@rosfield.test', password='password123')
 
     def test_register_success(self):
