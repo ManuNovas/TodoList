@@ -130,3 +130,12 @@ class TestTodo(TestCase):
             'Authorization': 'Token ' + token
         })
         self.assertEqual(response.status_code, 404)
+
+    def test_delete_success(self):
+        token = self.create_token()
+        todo = self.create_todo()
+        path = reverse('todos:item', args=[todo.id])
+        response = self.client.delete(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 204)

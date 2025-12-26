@@ -34,6 +34,11 @@ def update(request, todo: ToDo):
     return response
 
 
+def delete(todo: ToDo):
+    todo.delete()
+    return HttpResponse(status=204)
+
+
 # Create your views here.
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -52,7 +57,7 @@ def index(request):
     return response
 
 
-@api_view(['PUT'])
+@api_view(['PUT', 'DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def item(request, primary_key: int):
@@ -60,6 +65,8 @@ def item(request, primary_key: int):
         todo = ToDo.objects.get(pk=primary_key, user=request.user)
         if request.method == 'PUT':
             response = update(request, todo)
+        elif request.method == 'DELETE':
+            response = delete(todo)
         else:
             response = HttpResponse('Method not allowed', status=405)
     except Exception as e:
