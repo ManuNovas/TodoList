@@ -1,0 +1,20 @@
+PUT {{url}}/todos/{{id}}
+Content-Type: application/json
+Authorization: Token {{token}}
+
+{
+  "title": "Basic magic commands",
+  "description": "Learn the basis of magic commands execution"
+}
+
+###
+POST {{url}}/todos/
+Content-Type: application/json
+Authorization: Token {{token}}
+
+{
+  "title": "Basic attack commands",
+  "description": "Learn the basis of attack commands execution"
+}
+
+###
