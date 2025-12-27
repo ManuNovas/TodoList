@@ -1,5 +1,6 @@
 from logging import error
 
+from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -7,13 +8,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 
 from todos.models import ToDo
-from todos.serializers import SaveSerializer
+from todos.serializers import ItemSerializer, ListSerializer, DEFAULT_LIMIT, DEFAULT_PAGE
 
 
 def create(request):
     data = JSONParser().parse(request)
-    serializer = SaveSerializer(data=data, context={
-        'request': request
+    serializer = ItemSerializer(data=data, context={
+        'request': request,
     })
     if serializer.is_valid():
         serializer.save()
@@ -25,7 +26,7 @@ def create(request):
 
 def update(request, todo: ToDo):
     data = JSONParser().parse(request)
-    serializer = SaveSerializer(todo, data=data)
+    serializer = ItemSerializer(todo, data=data)
     if serializer.is_valid():
         serializer.save()
         response = JsonResponse(serializer.data, status=200)
@@ -39,8 +40,28 @@ def delete(todo: ToDo):
     return HttpResponse(status=204)
 
 
+def get(request):
+    serializer = ListSerializer(data=request.GET)
+    if serializer.is_valid():
+        todos = ToDo.objects.filter(user=request.user).order_by('id')
+        limit = serializer.validated_data.get('limit', DEFAULT_LIMIT)
+        paginator = Paginator(todos, limit)
+        page = serializer.validated_data.get('page', DEFAULT_PAGE)
+        data = paginator.get_page(page)
+        items = ItemSerializer(data.object_list, many=True)
+        response = JsonResponse({
+            'data': items.data,
+            'page': page,
+            'limit': limit,
+            'total': paginator.count,
+        }, status=200, safe=False)
+    else:
+        response = JsonResponse(serializer.errors, status=400)
+    return response
+
+
 # Create your views here.
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def index(request):
@@ -49,6 +70,8 @@ def index(request):
             return HttpResponse('Unauthorized', status=401)
         if request.method == 'POST':
             response = create(request)
+        elif request.method == 'GET':
+            response = get(request)
         else:
             response = HttpResponse('Method not allowed', status=405)
     except Exception as e:

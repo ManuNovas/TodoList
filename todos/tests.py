@@ -139,3 +139,33 @@ class TestTodo(TestCase):
             'Authorization': 'Token ' + token
         })
         self.assertEqual(response.status_code, 204)
+
+    def test_list_success(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index')
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_list_invalid_page(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?page=one'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_invalid_limit(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?limit=ten'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
