@@ -1,20 +1,20 @@
-GET {{url}}/todos/?page={{page}}&limit={{limit}}
+GET {{url}}/todos/?page={{page}}&limit={{limit}}&search={{search}}&sort_by={{sort_by}}&order={{order}}
 Accept: application/json
 Authorization: Token {{token}}
 
 ###
-DELETE {{url}}/todos/{{id}}
+DELETE {{url}}/todos/{{todo.id}}
 Accept: application/json
 Authorization: Token {{token}}
 
 ###
-PUT {{url}}/todos/{{id}}
+PUT {{url}}/todos/{{todo.id}}
 Content-Type: application/json
 Authorization: Token {{token}}
 
 {
-  "title": "Basic magic commands",
-  "description": "Learn the basis of magic commands execution"
+  "title": "{{todo.title}}",
+  "description": "{{todo.description}}"
 }
 
 ###
@@ -23,8 +23,8 @@ Content-Type: application/json
 Authorization: Token {{token}}
 
 {
-  "title": "Basic attack commands",
-  "description": "Learn the basis of attack commands execution"
+  "title": "{{todo.title}}",
+  "description": "{{todo.description}}"
 }
 
 ###

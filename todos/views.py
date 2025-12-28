@@ -1,6 +1,7 @@
 from logging import error
 
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -43,7 +44,13 @@ def delete(todo: ToDo):
 def get(request):
     serializer = ListSerializer(data=request.GET)
     if serializer.is_valid():
-        todos = ToDo.objects.filter(user=request.user).order_by('id')
+        todos = ToDo.objects.filter(user=request.user)
+        search = serializer.validated_data.get('search', None)
+        if search is not None:
+            todos = todos.filter(Q(title__icontains=search) | Q(description__icontains=search))
+        sort_by = serializer.validated_data.get('sort_by', 'id')
+        order = serializer.validated_data.get('order', 'asc')
+        todos = todos.order_by(f'{'-' if order == 'desc' else ''}{sort_by}')
         limit = serializer.validated_data.get('limit', DEFAULT_LIMIT)
         paginator = Paginator(todos, limit)
         page = serializer.validated_data.get('page', DEFAULT_PAGE)

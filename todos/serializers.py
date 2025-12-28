@@ -1,5 +1,5 @@
 from rest_framework.fields import CharField, IntegerField
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, ValidationError
 
 from todos.models import ToDo
 
@@ -26,3 +26,16 @@ class ItemSerializer(Serializer):
 class ListSerializer(Serializer):
     page = IntegerField(default=DEFAULT_PAGE)
     limit = IntegerField(default=DEFAULT_LIMIT)
+    search = CharField(min_length=2, max_length=128, required=False)
+    sort_by = CharField(default='id')
+    order = CharField(default='asc')
+
+    def validate_sort_by(self, sort_by):
+        if sort_by not in ['id', 'title', 'description']:
+            raise ValidationError('Invalid sort by value.')
+        return sort_by
+
+    def validate_order(self, order):
+        if order not in ['asc', 'desc']:
+            raise ValidationError('Invalid order value.')
+        return order

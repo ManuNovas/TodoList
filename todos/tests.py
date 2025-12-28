@@ -150,6 +150,16 @@ class TestTodo(TestCase):
         })
         self.assertEqual(response.status_code, 200)
 
+    def test_list_success_pagination(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?page=2&limit=10'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 200)
+
     def test_list_invalid_page(self):
         token = self.create_token()
         for i in range(16):
@@ -165,6 +175,69 @@ class TestTodo(TestCase):
         for i in range(16):
             self.create_todo()
         path = reverse('todos:index') + '?limit=ten'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_success_search(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?search=basic'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_list_short_search(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?search=b'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_long_search(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        search = 'extremely%20long%20search%20' * 128
+        path = reverse('todos:index') + '?search=' + search
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_success_sort_by_and_order(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        for sort_by in ['id', 'title', 'description']:
+            for order in ['asc', 'desc']:
+                path = reverse('todos:index') + f'?sort_by={sort_by}&order={order}'
+                response = self.client.get(path, content_type='application/json', headers={
+                    'Authorization': 'Token ' + token
+                })
+                self.assertEqual(response.status_code, 200)
+
+    def test_list_invalid_sort_by(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?sort_by=invalid'
+        response = self.client.get(path, content_type='application/json', headers={
+            'Authorization': 'Token ' + token
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_invalid_order(self):
+        token = self.create_token()
+        for i in range(16):
+            self.create_todo()
+        path = reverse('todos:index') + '?order=invalid'
         response = self.client.get(path, content_type='application/json', headers={
             'Authorization': 'Token ' + token
         })
